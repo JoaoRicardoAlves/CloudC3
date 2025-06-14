@@ -1,9 +1,3 @@
-Claro! Um bom `README.md` é a porta de entrada do seu projeto. Ele deve explicar o que o projeto faz, quais tecnologias usa e, mais importante, como executá-lo.
-
-Criei um `README.md` completo e bem estruturado para o seu projeto. Você só precisa criar um arquivo chamado `README.md` na pasta raiz do seu projeto (`meu_projeto_completo/`) e colar o conteúdo abaixo.
-
----
-
 # 📚 Sistema de Gerenciamento de Biblioteca com Docker
 
 Este projeto consiste em um Sistema de Gerenciamento de Biblioteca completo, desenvolvido com Python/Flask e conteinerizado com Docker e Docker Compose. A aplicação permite cadastrar, listar, emprestar, devolver e excluir livros de um acervo, com todos os dados persistidos em um banco de dados PostgreSQL.
