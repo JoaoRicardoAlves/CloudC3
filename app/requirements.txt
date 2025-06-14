@@ -1,0 +1,5 @@
+# meu_projeto_web/app/requirements.txt
+
+Flask>=3.0.0          # Altere esta linha para uma versão mais nova
+gunicorn==20.1.0
+psycopg2-binary==2.9.5

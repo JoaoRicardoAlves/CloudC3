@@ -1,0 +1,68 @@
+# Início do arquivo docker-compose.yml
+# A linha 'version' foi removida para compatibilidade com as versões mais recentes do Docker Compose.
+
+services:
+  # 1. Contêiner da Aplicação Web
+  web:
+    build: ./app
+    container_name: meu_servidor_web
+    ports:
+      # Disponível na porta 8080 da máquina local
+      - "8080:5000"
+    volumes:
+      # Espelha o código local para dentro do contêiner para desenvolvimento fácil
+      - ./app:/usr/src/app
+    environment:
+      # Conecta ao serviço 'db' na rede interna do Docker
+      - DATABASE_URL=postgresql://user:password@db:5432/mydatabase
+    command: sh -c "gunicorn --bind 0.0.0.0:5000 app:app"
+    depends_on:
+      - db
+    restart: always
+
+  # 2. Contêiner do Banco de Dados
+  db:
+    image: postgres:13
+    container_name: meu_banco_de_dados
+    # Nenhuma porta exposta ao host, garantindo que seja acessível apenas pelos outros contêineres.
+    volumes:
+      # O volume nomeado 'postgres_data' garante que os dados não se percam.
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=mydatabase
+    restart: always
+
+  # 3. Contêiner do Adminer (Gerenciador de Banco de Dados)
+  adminer:
+    image: adminer
+    container_name: meu_adminer
+    ports:
+      # Acessível na porta 8081 para não conflitar com a nossa app
+      - "8081:8080"
+    depends_on:
+      - db
+    restart: always
+
+  # 4. Contêiner do Portainer (Gerenciador de Contêineres)
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: meu_portainer
+    ports:
+      # Portas para a interface web do Portainer
+      - "9000:9000"
+      - "9443:9443"
+    volumes:
+      # Necessário para o Portainer se comunicar com o Docker da sua máquina
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Volume para persistir os dados do próprio Portainer (usuários, configs)
+      - portainer_data:/data
+    restart: always
+
+# Definição dos volumes nomeados para persistência de dados
+volumes:
+  postgres_data:
+  portainer_data:
+
+# Fim do arquivo docker-compose.yml

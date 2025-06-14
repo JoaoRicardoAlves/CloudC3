@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Sistema de Gerenciamento de Biblioteca</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Lora:wght@400;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <style type="text/tailwindcss">
+        :root {
+            --primary-color: #8B4513; --secondary-color: #D2B48C; --background-color: #F5F5DC; --text-color: #3A3A3A; --accent-color: #A0522D; --border-color: #DEB887;
+        }
+        body { font-family: 'Lora', serif; background-color: var(--background-color); color: var(--text-color); }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Merriweather', serif; color: var(--primary-color); }
+        .rustic-input { @apply w-full px-4 py-3 border border-[var(--border-color)] rounded-md bg-white focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)] placeholder:text-gray-400; }
+        .rustic-button { @apply bg-[var(--primary-color)] hover:bg-[var(--accent-color)] text-white font-semibold py-3 px-6 rounded-md flex items-center justify-center transition duration-150 ease-in-out shadow-md; }
+        .rustic-button-sm { @apply bg-[var(--accent-color)] hover:bg-[var(--primary-color)] text-white font-semibold py-2 px-4 rounded-md text-sm transition duration-150 ease-in-out shadow-sm; }
+        .rustic-card { @apply bg-white bg-opacity-80 p-6 rounded-lg shadow-xl border border-[var(--border-color)]; }
+        .table-header { @apply px-6 py-3 text-left text-xs font-semibold text-[var(--primary-color)] uppercase tracking-wider bg-[var(--secondary-color)] bg-opacity-30; }
+        .table-cell { @apply px-6 py-4 whitespace-nowrap text-sm; }
+        .status-badge { @apply px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full; }
+        .status-available { @apply bg-green-100 text-green-800; }
+        .status-borrowed { @apply bg-yellow-100 text-yellow-800; }
+        .status-few { @apply bg-orange-100 text-orange-800; }
+    </style>
+</head>
+<body class="antialiased">
+<div class="container mx-auto p-6">
+    <header class="text-center mb-12">
+        <div class="flex items-center justify-center mb-3">
+            <span class="material-icons text-5xl text-[var(--primary-color)] mr-3">menu_book</span>
+            <h1 class="text-5xl font-bold">Biblioteca </h1>
+        </div>
+        <p class="text-[var(--accent-color)] text-xl italic">Um refúgio para amantes de livros e conhecimento.</p>
+    </header>
+
+    <!-- Seção de Mensagens (Flash) -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="mb-8 space-y-2">
+            {% for category, message in messages %}
+                <div class="p-4 rounded-md text-sm font-medium
+                    {% if category == 'danger' %} bg-red-100 text-red-800
+                    {% elif category == 'success' %} bg-green-100 text-green-800
+                    {% else %} bg-blue-100 text-blue-800 {% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <section class="rustic-card mb-10">
+        <h2 class="text-3xl font-semibold mb-6">Registrar Nova Obra</h2>
+        <!-- FORMULÁRIO DE CADASTRO - TORNADO DINÂMICO -->
+        <form action="{{ url_for('add_book') }}" method="POST" class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+            <div class="md:col-span-1">
+                <label class="block text-sm font-medium text-[var(--text-color)] mb-1" for="title">Título da Obra</label>
+                <input class="rustic-input" id="title" name="title" placeholder="Ex: Crime e Castigo" type="text" required/>
+            </div>
+            <div class="md:col-span-1">
+                <label class="block text-sm font-medium text-[var(--text-color)] mb-1" for="author">Autor</label>
+                <input class="rustic-input" id="author" name="author" placeholder="Ex: Fiódor Dostoiévski" type="text" required/>
+            </div>
+            <div class="md:col-span-1">
+                <label class="block text-sm font-medium text-[var(--text-color)] mb-1" for="copies">Exemplares</label>
+                <input class="rustic-input" id="copies" name="copies" placeholder="Ex: 3" type="number" min="1" required/>
+            </div>
+            <button class="rustic-button" type="submit">
+                <span class="material-icons mr-2">add_circle_outline</span>
+                Adicionar ao Acervo
+            </button>
+        </form>
+    </section>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        <section class="lg:col-span-2 rustic-card">
+            <h2 class="text-3xl font-semibold mb-6">Nosso Acervo Precioso</h2>
+            <div class="overflow-x-auto border border-[var(--border-color)] rounded-md">
+                <table class="min-w-full divide-y divide-[var(--border-color)]">
+                    <thead class="bg-[var(--secondary-color)] bg-opacity-20">
+                    <tr>
+                        <th class="table-header" scope="col">Título</th>
+                        <th class="table-header" scope="col">Autor</th>
+                        <th class="table-header" scope="col">Disponibilidade</th>
+                        <th class="table-header" scope="col">Ações</th>
+                    </tr>
+                    </thead>
+                    <tbody class="bg-white bg-opacity-60 divide-y divide-[var(--border-color)]">
+                        <!-- LOOP PARA LISTAR OS LIVROS - TORNADO DINÂMICO -->
+                        {% for book in books %}
+                        <tr>
+                            <td class="table-cell font-medium text-[var(--primary-color)]">{{ book[1] }}</td>
+                            <td class="table-cell text-[var(--text-color)]">{{ book[2] }}</td>
+                            <td class="table-cell">
+                                <!-- LÓGICA DE BADGE DE STATUS DINÂMICA -->
+                                <span class="status-badge 
+                                    {% if book[4] == 0 %} status-borrowed
+                                    {% elif book[4] <= 2 %} status-few
+                                    {% else %} status-available {% endif %}">
+                                    {{ book[4] }} de {{ book[3] }} disp.
+                                </span>
+                            </td>
+                            <td class="table-cell font-medium flex items-center space-x-2">
+                                <!-- FORMULÁRIO DE EMPRÉSTIMO - SÓ APARECE SE HOUVER CÓPIAS -->
+                                {% if book[4] > 0 %}
+                                <form action="{{ url_for('checkout_book', book_id=book[0]) }}" method="POST" class="flex items-center space-x-2">
+                                    <input class="rustic-input !py-2 !w-32 text-sm" name="borrower_name" placeholder="Nome do Leitor" type="text" required/>
+                                    <button class="rustic-button-sm" type="submit">
+                                        <span class="material-icons text-base align-middle mr-1">bookmark_add</span>Emprestar
+                                    </button>
+                                </form>
+                                {% endif %}
+                                <!-- FORMULÁRIO DE EXCLUSÃO -->
+                                <form action="{{ url_for('delete_book', book_id=book[0]) }}" method="POST">
+                                    <button class="bg-red-700 hover:bg-red-800 text-white font-semibold p-2 rounded-md text-sm transition duration-150 ease-in-out shadow-sm" type="submit" onclick="return confirm('Tem certeza que deseja excluir esta obra e todo o seu histórico?');">
+                                        <span class="material-icons text-base align-middle">delete_outline</span>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <!-- MENSAGEM SE NÃO HOUVER LIVROS -->
+                        <tr>
+                            <td colspan="4" class="text-center py-10 text-[var(--text-color)] italic">O acervo está vazio. Que tal adicionar a primeira obra?</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <aside class="rustic-card">
+            <h2 class="text-3xl font-semibold mb-6">Obras Emprestadas</h2>
+            <!-- LISTA DE EMPRÉSTIMOS - TORNADA DINÂMICA -->
+            {% if loans %}
+            <div class="space-y-4">
+                {% for loan in loans %}
+                <div class="bg-[var(--secondary-color)] bg-opacity-20 p-4 rounded-md border border-[var(--border-color)] flex justify-between items-center">
+                    <div>
+                        <p class="font-bold text-[var(--primary-color)]">{{ loan[1] }}</p>
+                        <p class="text-sm text-[var(--text-color)]">com: <span class="font-semibold">{{ loan[2] }}</span></p>
+                    </div>
+                    <form action="{{ url_for('return_book', loan_id=loan[0]) }}" method="POST">
+                        <button class="rustic-button-sm !bg-green-700 hover:!bg-green-800" type="submit">
+                            <span class="material-icons text-base align-middle mr-1">assignment_return</span>Devolver
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <!-- MENSAGEM SE NÃO HOUVER EMPRÉSTIMOS -->
+            <div class="bg-[var(--secondary-color)] bg-opacity-20 p-4 rounded-md border border-[var(--border-color)]">
+                <p class="text-sm text-[var(--text-color)] text-center italic">Nenhuma obra emprestada no momento. As prateleiras aguardam ansiosamente.</p>
+            </div>
+            {% endif %}
+        </aside>
+    </div>
+
+    <footer class="text-center mt-12 pt-8 border-t border-[var(--border-color)]">
+        <p class="text-sm text-[var(--accent-color)]">© 2024 Biblioteca. Construído com Flask e Docker.</p>
+    </footer>
+</div>
+</body>
+</html>
