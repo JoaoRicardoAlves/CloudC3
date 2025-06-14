@@ -56,7 +56,7 @@ Antes de começar, certifique-se de que você tem o **Docker** e o **Docker Comp
 
 1.  **Clone o repositório:**
     ```bash
-    git clone https://github.com/JoaoRicardoAlves/Projetoc1.git
+    git clone https://github.com/JoaoRicardoAlves/CloudC3.git
     ```
 
 2.  **Navegue até a pasta do projeto:**
