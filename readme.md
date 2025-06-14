@@ -61,7 +61,7 @@ Antes de começar, certifique-se de que você tem o **Docker** e o **Docker Comp
 
 2.  **Navegue até a pasta do projeto:**
     ```bash
-    cd Projetoc1
+    cd CloudC3
     ```
 
 3.  **Suba os contêineres:**
