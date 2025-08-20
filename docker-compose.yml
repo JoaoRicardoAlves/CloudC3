@@ -25,6 +25,8 @@ services:
     image: postgres:13
     container_name: meu_banco_de_dados
     # Nenhuma porta exposta ao host, garantindo que seja acessível apenas pelos outros contêineres.
+    ports:
+      - "5432:5432"
     volumes:
       # O volume nomeado 'postgres_data' garante que os dados não se percam.
       - postgres_data:/var/lib/postgresql/data/
